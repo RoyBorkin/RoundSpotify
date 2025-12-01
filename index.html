@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spotify Circular Remote</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -10,31 +10,36 @@
             --primary: #1DB954;
             --dark: #191414;
             --light: #FFFFFF;
+            --vinyl-black: #111;
         }
 
         body {
             margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100vw;
             height: 100vh;
             background-color: #000;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             overflow: hidden;
+            user-select: none; 
         }
 
         #remote-container {
-            width: 95vmin;
-            height: 95vmin;
-            max-width: 500px;
-            max-height: 500px;
+            width: 98vmin; 
+            height: 98vmin;
             border-radius: 50%;
             position: relative;
             overflow: hidden;
             box-shadow: 0 0 50px rgba(29, 185, 84, 0.3);
             border: 2px solid #333;
+            font-size: calc(10px + 1vmin); 
+            background: #000;
         }
 
+        /* --- STANDARD BACKGROUND --- */
         #bg-image {
             position: absolute;
             top: 0;
@@ -45,172 +50,281 @@
             background-position: center;
             filter: blur(15px) brightness(0.4);
             z-index: 1;
-            transition: background-image 0.5s ease;
+            transition: opacity 0.5s ease;
         }
 
+        /* --- UI LAYER --- */
         #ui-layer {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 40px 0;
+            padding: 8% 0;
             box-sizing: border-box;
             color: var(--light);
+            transition: all 0.5s ease;
         }
 
+        /* --- TOP BUTTONS --- */
         .top-controls {
             display: flex;
-            gap: 20px;
-            margin-top: 30px;
+            gap: 10px;
+            margin-top: 5%;
+            z-index: 20; 
+            order: 1;
+            position: relative;
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 0.8em 1.2em;
+            border-radius: 2em;
             cursor: pointer;
             backdrop-filter: blur(5px);
-            font-size: 0.9rem;
+            font-size: 0.8em;
             transition: all 0.2s;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .btn-secondary:hover, .btn-secondary.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: black;
+            font-weight: bold;
         }
 
+        /* --- SONG INFO --- */
         .song-info {
             text-align: center;
-            width: 70%;
+            width: 75%;
+            margin: auto 0;
+            transition: all 0.5s ease;
+            order: 2; 
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
 
         #track-name {
-            font-size: 1.5rem;
+            font-size: 1.8em;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 0.2em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         #artist-name {
-            font-size: 1rem;
+            font-size: 1.2em;
             opacity: 0.8;
+        }
+
+        /* --- CONTROLS SECTION --- */
+        .bottom-section {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 5%;
+            order: 3;
+            position: relative;
+            z-index: 10;
         }
 
         .main-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 50px;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
         .btn-control {
             background: none;
             border: none;
             color: var(--light);
-            font-size: 1.2rem;
+            font-size: 1.5em;
             cursor: pointer;
             opacity: 0.8;
             transition: transform 0.1s;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.7));
         }
 
-        .btn-control:hover {
-            opacity: 1;
-            transform: scale(1.1);
-        }
+        .btn-control:hover { opacity: 1; transform: scale(1.1); }
 
         .btn-play {
-            font-size: 2.5rem;
+            font-size: 2.5em;
             background: var(--light);
             color: var(--dark);
-            width: 60px;
-            height: 60px;
+            width: 2em;
+            height: 2em;
+            padding: 0.5em; 
+            box-sizing: content-box; 
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            filter: none;
         }
 
-        #login-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 10;
-            display: flex; /* Flex by default, JS will hide */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .login-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 20px;
-        }
-
-        .modal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 5;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .modal.active {
+        /* --- PROGRESS BAR --- */
+        .progress-wrapper {
+            width: 60%;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.8em;
+            font-family: monospace;
+            transition: opacity 0.3s;
+            text-shadow: 0 1px 3px rgba(0,0,0,1);
         }
 
-        .list-container {
-            width: 80%;
-            height: 60%;
-            overflow-y: auto;
-            text-align: center;
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 5px; 
+            background: rgba(255,255,255,0.3); 
+            border-radius: 5px; outline: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 15px; height: 15px; 
+            border-radius: 50%; background: var(--primary); cursor: pointer;
         }
 
-        .list-item {
-            padding: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
+        /* --- VINYL MODE STYLES --- */
+        
+        #vinyl-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vmin;
+            height: 100vmin;
+            border-radius: 50%;
+            z-index: 5; 
+            display: none; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            cursor: grab;
         }
+
+        #vinyl-wrapper:active {
+            cursor: grabbing;
+        }
+
+        .vinyl-disk {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle, #111 25%, transparent 26%),
+                repeating-radial-gradient(#111 0, #111 2px, #222 3px, #111 4px);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        .vinyl-label {
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            box-shadow: 0 0 0 2px #000, 0 0 0 4px #333; 
+            pointer-events: none; 
+        }
+        
+        .vinyl-label::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px; height: 12px;
+            background: #000;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        /* --- TONE ARM STYLES --- */
+        #tone-arm {
+            position: absolute;
+            top: 0;
+            right: 15%; /* Anchor generally to top-right */
+            width: 6vmin; 
+            height: 60vmin; /* Long enough to reach center */
+            transform-origin: 50% 10%; /* Pivot from the top circle */
+            z-index: 8; /* Above vinyl (5), below UI (10) */
+            pointer-events: none;
+            transition: transform 0.1s linear; /* Small smoothing */
+            display: none; /* Hidden in standard mode */
+            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.5));
+        }
+
+        .pivot {
+            width: 6vmin;
+            height: 6vmin;
+            background: #444;
+            border-radius: 50%;
+            border: 2px solid #888;
+            position: absolute;
+            top: 5%;
+            left: 0;
+            box-sizing: border-box;
+            background: radial-gradient(circle at 30% 30%, #666, #222);
+        }
+
+        .arm-rod {
+            width: 1.5vmin;
+            height: 45vmin;
+            background: linear-gradient(90deg, #ccc, #eee, #999);
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .headshell {
+            width: 3vmin;
+            height: 6vmin;
+            background: #222;
+            position: absolute;
+            bottom: 35%; /* Adjust based on rod length */
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        /* --- UI MODIFICATIONS FOR VINYL MODE --- */
+        
+        .vinyl-mode #bg-image { opacity: 0; }
+        .vinyl-mode #vinyl-wrapper { display: block; order: 2; }
+        .vinyl-mode #tone-arm { display: block; } /* Show arm */
+        .vinyl-mode .song-info { order: 5; margin-bottom: 20px; }
+        .vinyl-mode .bottom-section { order: 4; margin-bottom: 10px; }
+        .vinyl-mode .progress-wrapper { display: none; }
+        .vinyl-mode .hide-on-vinyl { display: none; }
+        .vinyl-mode #ui-layer { justify-content: center; gap: 20px; }
+
+        /* --- MODALS --- */
+        #login-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+        .login-btn { background-color: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
+        .modal { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:50; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; color:white; }
+        .modal.active { display: flex; }
+        .list-container { width: 80%; height: 60%; overflow-y: auto; text-align: center; }
+        .list-item { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; font-size: 1.1em; color: white; }
         .list-item:hover { color: var(--primary); }
-        .list-item.active-device { color: var(--primary); font-weight: bold;}
+        .close-modal { margin-top: 20px; background: none; border: 1px solid white; color: white; padding: 10px 25px; border-radius: 20px; cursor: pointer; }
 
-        .close-modal {
-            margin-top: 15px;
-            background: none;
-            border: 1px solid white;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 15px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -226,8 +340,20 @@
 
         <div id="ui-layer">
             <div class="top-controls">
-                <button class="btn-secondary" onclick="openPlaylists()"><i class="fas fa-list"></i> Playlists</button>
-                <button class="btn-secondary" onclick="openDevices()"><i class="fas fa-desktop"></i> Devices</button>
+                <button class="btn-secondary" onclick="openPlaylists()"><i class="fas fa-list"></i></button>
+                <button class="btn-secondary" onclick="openDevices()"><i class="fas fa-desktop"></i></button>
+                <button class="btn-secondary" id="vinyl-btn" onclick="toggleVinylMode()"><i class="fas fa-compact-disc"></i></button>
+            </div>
+
+            <div id="vinyl-wrapper">
+                <div class="vinyl-disk" id="vinyl-disk">
+                    <div class="vinyl-label" id="vinyl-label"></div>
+                </div>
+                <div id="tone-arm">
+                    <div class="pivot"></div>
+                    <div class="arm-rod"></div>
+                    <div class="headshell"></div>
+                </div>
             </div>
 
             <div class="song-info">
@@ -235,25 +361,35 @@
                 <div id="artist-name">Connect a device</div>
             </div>
 
-            <div class="main-controls">
-                <button class="btn-control" onclick="previousTrack()"><i class="fas fa-step-backward"></i></button>
-                <button class="btn-control" onclick="seek(-15000)"><i class="fas fa-undo"></i></button>
-                <button class="btn-control btn-play" id="play-pause-btn" onclick="togglePlay()">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="btn-control" onclick="seek(15000)"><i class="fas fa-redo"></i></button>
-                <button class="btn-control" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+            <div class="bottom-section">
+                <div class="main-controls">
+                    <button class="btn-control" onclick="previousTrack()"><i class="fas fa-step-backward"></i></button>
+                    <button class="btn-control hide-on-vinyl" onclick="seekRelative(-15000)"><i class="fas fa-undo"></i></button>
+                    
+                    <button class="btn-control btn-play" id="play-pause-btn" onclick="togglePlay()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    
+                    <button class="btn-control hide-on-vinyl" onclick="seekRelative(15000)"><i class="fas fa-redo"></i></button>
+                    <button class="btn-control" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+                </div>
+
+                <div class="progress-wrapper">
+                    <span id="current-time">0:00</span>
+                    <input type="range" id="progress-bar" min="0" max="100" value="0">
+                    <span id="total-time">0:00</span>
+                </div>
             </div>
         </div>
 
         <div id="playlist-modal" class="modal">
-            <h3>Select Playlist</h3>
+            <h3>Playlists</h3>
             <div class="list-container" id="playlist-list">Loading...</div>
             <button class="close-modal" onclick="closeModals()">Close</button>
         </div>
 
         <div id="device-modal" class="modal">
-            <h3>Select Device</h3>
+            <h3>Devices</h3>
             <div class="list-container" id="device-list">Loading...</div>
             <button class="close-modal" onclick="closeModals()">Close</button>
         </div>
@@ -261,243 +397,296 @@
 
 <script>
     // --- CONFIGURATION ---
-    const clientId = 'ae4f9dd4cc124d92b33737be4ff31c1f'; // PASTE YOUR CLIENT ID HERE
-    
-    // We strip the query parameters (?) to get the base URL for redirection
+    const clientId = 'ae4f9dd4cc124d92b33737be4ff31c1f'; // <--- PASTE YOUR ID HERE (ae4f...)
     const redirectUri = window.location.href.split('?')[0]; 
-    
     const scope = "user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative";
 
-    // --- PKCE AUTHENTICATION LOGIC ---
+    // --- STATE VARIABLES ---
+    let isVinylMode = false;
+    let isScrubbing = false; 
+    let currentProgress = 0;
+    let trackDuration = 0;
+    let isPlaying = false;
+    let lastUpdateTime = 0; // For smoothing
+    
+    // Vinyl Variables
+    let vinylDisk = document.getElementById('vinyl-disk');
+    let vinylWrapper = document.getElementById('vinyl-wrapper');
+    let toneArm = document.getElementById('tone-arm');
+    let startAngle = 0;
+    let currentRotation = 0; 
+    let accumulatedSeekMs = 0;
 
+    // --- JS ANIMATION LOOP ---
+    function renderLoop(timestamp) {
+        if (!lastUpdateTime) lastUpdateTime = timestamp;
+        const deltaTime = timestamp - lastUpdateTime;
+        lastUpdateTime = timestamp;
+
+        if (isVinylMode) {
+            // 1. Vinyl Spin Logic
+            if (isPlaying && !isScrubbing) {
+                // Spin slowly
+                currentRotation += 0.3; 
+                
+                // 2. Smooth Progress Interpolation for Arm
+                // Add elapsed time to currentProgress to make arm glide
+                // (Only update local visual var, don't write to API)
+                if(trackDuration > 0) {
+                    currentProgress += deltaTime; 
+                    if(currentProgress > trackDuration) currentProgress = trackDuration;
+                }
+            }
+            vinylDisk.style.transform = `rotate(${currentRotation}deg)`;
+
+            // 3. Tone Arm Logic
+            if (trackDuration > 0) {
+                const percent = Math.min(1, Math.max(0, currentProgress / trackDuration));
+                // Arm Angle: Start at -25deg (edge), End at +20deg (center)
+                const armAngle = -25 + (percent * 45);
+                toneArm.style.transform = `rotate(${armAngle}deg)`;
+            }
+        }
+        requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
+
+
+    // --- VINYL LOGIC ---
+
+    function toggleVinylMode() {
+        isVinylMode = !isVinylMode;
+        const container = document.getElementById('remote-container');
+        const btn = document.getElementById('vinyl-btn');
+        
+        if (isVinylMode) {
+            container.classList.add('vinyl-mode');
+            btn.classList.add('active');
+        } else {
+            container.classList.remove('vinyl-mode');
+            btn.classList.remove('active');
+        }
+    }
+
+    function getAngle(x, y) {
+        const rect = vinylWrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        return Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+    }
+
+    function startScratch(e) {
+        if(!isVinylMode) return;
+        isScrubbing = true;
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startAngle = getAngle(clientX, clientY) - currentRotation;
+        accumulatedSeekMs = 0; 
+    }
+
+    function moveScratch(e) {
+        if (!isScrubbing) return;
+        e.preventDefault(); 
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const angle = getAngle(clientX, clientY);
+        const newRotation = angle - startAngle;
+        let delta = newRotation - currentRotation;
+        if (delta > 180) delta -= 360;
+        if (delta < -180) delta += 360;
+
+        currentRotation = newRotation;
+        accumulatedSeekMs += (delta * 100); 
+    }
+
+    async function endScratch() {
+        if(!isScrubbing) return;
+        isScrubbing = false;
+        
+        if (Math.abs(accumulatedSeekMs) > 100) {
+            const newPos = Math.max(0, currentProgress + accumulatedSeekMs);
+            // Manually set currentProgress so arm jumps immediately
+            currentProgress = newPos; 
+            await fetchApi(`me/player/seek?position_ms=${Math.floor(newPos)}`, 'PUT');
+            setTimeout(updateState, 500);
+        }
+    }
+
+    vinylWrapper.addEventListener('mousedown', startScratch);
+    document.addEventListener('mousemove', moveScratch);
+    document.addEventListener('mouseup', endScratch);
+
+    vinylWrapper.addEventListener('touchstart', startScratch, {passive: false});
+    document.addEventListener('touchmove', moveScratch, {passive: false});
+    document.addEventListener('touchend', endScratch);
+
+
+    // --- AUTH & API ---
+    // (Standard OAuth functions)
     function generateRandomString(length) {
         let text = '';
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
+        for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
         return text;
     }
 
     async function generateCodeChallenge(codeVerifier) {
         const data = new TextEncoder().encode(codeVerifier);
         const digest = await window.crypto.subtle.digest('SHA-256', data);
-        return btoa(String.fromCharCode.apply(null, [...new Uint8Array(digest)]))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
+        return btoa(String.fromCharCode.apply(null, [...new Uint8Array(digest)])).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     async function startAuthFlow() {
         const codeVerifier = generateRandomString(128);
         window.localStorage.setItem('code_verifier', codeVerifier);
-
         const codeChallenge = await generateCodeChallenge(codeVerifier);
         const authUrl = new URL("https://accounts.spotify.com/authorize");
-
-        const params = {
-            response_type: 'code',
-            client_id: clientId,
-            scope: scope,
-            code_challenge_method: 'S256',
-            code_challenge: codeChallenge,
-            redirect_uri: redirectUri,
-        };
-
+        const params = { response_type: 'code', client_id: clientId, scope: scope, code_challenge_method: 'S256', code_challenge: codeChallenge, redirect_uri: redirectUri };
         authUrl.search = new URLSearchParams(params).toString();
         window.location.href = authUrl.toString();
     }
 
     async function getToken(code) {
         const codeVerifier = window.localStorage.getItem('code_verifier');
-        const payload = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                client_id: clientId,
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: redirectUri,
-                code_verifier: codeVerifier,
-            }),
-        };
-
+        const payload = { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: clientId, grant_type: 'authorization_code', code: code, redirect_uri: redirectUri, code_verifier: codeVerifier }) };
         const body = await fetch("https://accounts.spotify.com/api/token", payload);
         const response = await body.json();
-
         if (response.access_token) {
             window.localStorage.setItem('access_token', response.access_token);
             window.localStorage.setItem('refresh_token', response.refresh_token);
-            // Clear code from URL
             window.history.replaceState({}, document.title, redirectUri);
             document.getElementById('login-overlay').style.display = 'none';
             startPolling();
-        } else {
-            alert("Error getting token. Check console.");
-            console.error(response);
         }
     }
-
-    // --- MAIN LOGIC ---
-
-    async function onPageLoad() {
-        const args = new URLSearchParams(window.location.search);
-        const code = args.get('code');
-
-        if (code) {
-            // We just came back from Spotify
-            await getToken(code);
-        } else if (window.localStorage.getItem('access_token')) {
-            // We already have a token
-            document.getElementById('login-overlay').style.display = 'none';
-            startPolling();
-        } else {
-            // We need to login
-            document.getElementById('login-overlay').style.display = 'flex';
-        }
-    }
-
-    // --- API CALLS ---
 
     async function fetchApi(endpoint, method = "GET", body = null) {
         let token = window.localStorage.getItem('access_token');
         if (!token) return;
-
-        const opts = {
-            method: method,
-            headers: { 'Authorization': `Bearer ${token}` }
-        };
-        if (body) {
-            opts.headers['Content-Type'] = 'application/json';
-            opts.body = JSON.stringify(body);
-        }
-
+        const opts = { method: method, headers: { 'Authorization': `Bearer ${token}` } };
+        if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
         try {
             const res = await fetch(`https://api.spotify.com/v1/${endpoint}`, opts);
-            
             if (res.status === 204) return null;
-            if (res.status === 401) {
-                // Token expired - in a real app we would use the refresh token here
-                // For now, we logout to force a new login
-                window.localStorage.removeItem('access_token');
-                window.location.reload(); 
-            }
+            if (res.status === 401) { window.localStorage.removeItem('access_token'); window.location.reload(); }
             return res.json();
-        } catch (e) {
-            console.error("API Error", e);
-        }
+        } catch (e) { console.error("API Error", e); }
     }
 
-    // --- PLAYER CONTROLS ---
-
-    let currentProgress = 0;
+    // --- UPDATES ---
+    function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
 
     async function updateState() {
+        if (isScrubbing) return; 
+
         const data = await fetchApi('me/player');
         if (!data || !data.item) {
             document.getElementById('track-name').innerText = "No Active Device";
-            document.getElementById('artist-name').innerText = "Open Spotify on a device";
+            document.getElementById('artist-name').innerText = "";
             return;
         }
 
+        // Data
+        isPlaying = data.is_playing;
+        // IMPORTANT: We sync local var with server, but animation loop smooths between calls
+        currentProgress = data.progress_ms; 
+        trackDuration = data.item.duration_ms;
+        const albumImg = data.item.album.images[0].url;
+
+        // UI Updates
         document.getElementById('track-name').innerText = data.item.name;
         document.getElementById('artist-name').innerText = data.item.artists.map(a => a.name).join(', ');
-        currentProgress = data.progress_ms;
-
-        const playBtn = document.getElementById('play-pause-btn');
-        playBtn.innerHTML = data.is_playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-
-        const albumImg = data.item.album.images[0].url;
+        
+        // Backgrounds
         document.getElementById('bg-image').style.backgroundImage = `url(${albumImg})`;
+        document.getElementById('vinyl-label').style.backgroundImage = `url(${albumImg})`;
+
+        // Play/Pause Btn
+        const playBtn = document.getElementById('play-pause-btn');
+        playBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+
+        // Progress Bar (Standard Mode)
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.max = trackDuration;
+        progressBar.value = currentProgress;
+        document.getElementById('current-time').innerText = formatTime(currentProgress);
+        document.getElementById('total-time').innerText = formatTime(trackDuration);
     }
 
+    // --- CONTROLS ---
     async function togglePlay() {
-        const data = await fetchApi('me/player');
-        if (data && data.is_playing) {
-            await fetchApi('me/player/pause', 'PUT');
-        } else {
-            await fetchApi('me/player/play', 'PUT');
-        }
+        if (isPlaying) await fetchApi('me/player/pause', 'PUT');
+        else await fetchApi('me/player/play', 'PUT');
         setTimeout(updateState, 500);
     }
-
-    async function nextTrack() {
-        await fetchApi('me/player/next', 'POST');
-        setTimeout(updateState, 500);
-    }
-
-    async function previousTrack() {
-        await fetchApi('me/player/previous', 'POST');
-        setTimeout(updateState, 500);
-    }
-
-    async function seek(amountMs) {
+    async function nextTrack() { await fetchApi('me/player/next', 'POST'); setTimeout(updateState, 500); }
+    async function previousTrack() { await fetchApi('me/player/previous', 'POST'); setTimeout(updateState, 500); }
+    async function seekRelative(amountMs) {
         const newPos = Math.max(0, currentProgress + amountMs);
         await fetchApi(`me/player/seek?position_ms=${newPos}`, 'PUT');
         setTimeout(updateState, 500);
     }
 
-    // --- PLAYLISTS & DEVICES ---
+    // Standard Slider Logic
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.addEventListener('input', (e) => {
+        isScrubbing = true;
+        document.getElementById('current-time').innerText = formatTime(e.target.value);
+    });
+    progressBar.addEventListener('change', async (e) => {
+        await fetchApi(`me/player/seek?position_ms=${e.target.value}`, 'PUT');
+        isScrubbing = false;
+        setTimeout(updateState, 1000);
+    });
 
-    function closeModals() {
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-    }
-
+    // Modals
+    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
     async function openPlaylists() {
-        closeModals();
-        document.getElementById('playlist-modal').classList.add('active');
-        const list = document.getElementById('playlist-list');
-        list.innerHTML = "Loading...";
-        
+        closeModals(); document.getElementById('playlist-modal').classList.add('active');
+        const list = document.getElementById('playlist-list'); list.innerHTML = "Loading...";
         const data = await fetchApi('me/playlists?limit=20');
         if (!data) return;
-
         list.innerHTML = '';
-        data.items.forEach(playlist => {
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            div.innerText = playlist.name;
-            div.onclick = async () => {
-                await fetchApi('me/player/play', 'PUT', { context_uri: playlist.uri });
-                closeModals();
-                setTimeout(updateState, 1000);
-            };
+        data.items.forEach(p => {
+            const div = document.createElement('div'); div.className = 'list-item'; div.innerText = p.name;
+            div.onclick = async () => { await fetchApi('me/player/play', 'PUT', { context_uri: p.uri }); closeModals(); setTimeout(updateState, 1000); };
+            list.appendChild(div);
+        });
+    }
+    async function openDevices() {
+        closeModals(); document.getElementById('device-modal').classList.add('active');
+        const list = document.getElementById('device-list'); list.innerHTML = "Loading...";
+        const data = await fetchApi('me/player/devices');
+        if (!data) return;
+        list.innerHTML = '';
+        data.devices.forEach(d => {
+            const div = document.createElement('div'); div.className = 'list-item'; div.innerText = `${d.name} (${d.type})`;
+            div.onclick = async () => { await fetchApi('me/player', 'PUT', { device_ids: [d.id] }); closeModals(); setTimeout(updateState, 1000); };
             list.appendChild(div);
         });
     }
 
-    async function openDevices() {
-        closeModals();
-        document.getElementById('device-modal').classList.add('active');
-        const list = document.getElementById('device-list');
-        list.innerHTML = "Loading...";
-
-        const data = await fetchApi('me/player/devices');
-        if (!data) return;
-
-        list.innerHTML = '';
-        data.devices.forEach(device => {
-            const div = document.createElement('div');
-            div.className = 'list-item' + (device.is_active ? ' active-device' : '');
-            div.innerText = `${device.name} (${device.type})`;
-            div.onclick = async () => {
-                await fetchApi('me/player', 'PUT', { device_ids: [device.id] });
-                closeModals();
-                setTimeout(updateState, 1000);
-            };
-            list.appendChild(div);
-        });
+    // Start
+    async function onPageLoad() {
+        const args = new URLSearchParams(window.location.search);
+        if (args.get('code')) await getToken(args.get('code'));
+        else if (window.localStorage.getItem('access_token')) {
+            document.getElementById('login-overlay').style.display = 'none';
+            startPolling();
+        } else {
+            document.getElementById('login-overlay').style.display = 'flex';
+        }
     }
 
     let pollInterval;
-    function startPolling() {
-        updateState();
-        if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(updateState, 3000);
-    }
-
+    function startPolling() { updateState(); if(pollInterval) clearInterval(pollInterval); pollInterval = setInterval(updateState, 3000); }
     window.onload = onPageLoad;
 
 </script>
